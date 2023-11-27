@@ -1,0 +1,31 @@
+version: '3'
+services:
+  db:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: escribo
+      MYSQL_DATABASE: userDB
+      MYSQL_USER: user
+      MYSQL_PASSWORD: 654321
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    restart: always
+  app:
+    build: .
+    command: >
+      bash -c "
+        # ./wait-for-mysql.sh db:3306 --timeout=10 --strict -- 
+        npx sequelize-cli db:migrate &&
+        npx sequelize-cli db:seed:all &&
+        npm start
+      "
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+volumes:
+  db_data: {}
